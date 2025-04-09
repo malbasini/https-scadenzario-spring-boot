@@ -1,10 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.config.AdminConfig;
-import com.example.demo.model.Beneficiario;
-import com.example.demo.model.Register;
-import com.example.demo.model.Ricevuta;
-import com.example.demo.model.Scadenza;
+import com.example.demo.model.*;
+import com.example.demo.repository.SubscriptionRepository;
 import com.example.demo.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +17,7 @@ import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.concurrent.Flow;
 import java.util.stream.Collectors;
 
 @Controller
@@ -44,6 +43,10 @@ public class ScadenzaController {
 
     @Autowired
     private AdminConfig adminConfig;
+    @Autowired
+    private SubscriptionService subscriptionService;
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
 
 
     @GetMapping("/scadenze/list")
@@ -54,6 +57,7 @@ public class ScadenzaController {
             @RequestParam(defaultValue = "beneficiario") String sortBy, // Campo di ordinamento
             @RequestParam(defaultValue = "asc") String sortDirection,
             @RequestParam(name = "message", required = false) String message,
+            @RequestParam(name = "message1", required = false) String message1,
             Principal principal,
             Model model) {
 
@@ -79,6 +83,8 @@ public class ScadenzaController {
         model.addAttribute("beneficiario", beneficiario);
         model.addAttribute("sortDirection", sortDirection);
         model.addAttribute("message", message);
+        model.addAttribute("message1", message1);
+
 
         return "scadenze/list";
     }
@@ -238,6 +244,10 @@ public class ScadenzaController {
     @PostMapping("/{id}/deletescadenza")
     public String deleteScadenza(@PathVariable("id") Integer id, Principal principal, Model model) {
         Scadenza scadenza = scadenzaService.findById(id);
+        Subscription s = subscriptionRepository.findByScadenza(scadenza);
+        if (s != null) {
+            return "redirect:/scadenze/list?message1=La scadenza risulta pagata. Impossibile cancellarla!";
+        }
         String formattedDate = scadenza.getDataScadenza().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         String loggedUsername = principal.getName(); // es: "mario rossi"
         // Verifico se il proprietario è lo stesso che ha fatto la login

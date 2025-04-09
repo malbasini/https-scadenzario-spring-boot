@@ -16,6 +16,15 @@
             </th:block>
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-12">
+            <th:block th:if="${!#strings.isEmpty(message1)}">
+                <div class="alert alert-danger" role="alert">
+                    <th:block th:text="${message1}"></th:block>
+                </div>
+            </th:block>
+        </div>
+    </div>
 </head>
 <body>
 <br>

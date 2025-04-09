@@ -57,7 +57,7 @@ public class RicevutaController {
             // Salva l'entità nel database
             ricevutaService.save(fileEntity);
 
-            return ResponseEntity.ok("File salvato con successo nel database.");
+            return ResponseEntity.ok("File salvato con successo nel database. Ricaricare la pagina per visualizzare il file!");
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Errore durante il salvataggio del file.");

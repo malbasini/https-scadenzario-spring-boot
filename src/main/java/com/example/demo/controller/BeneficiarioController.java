@@ -5,6 +5,10 @@ import com.example.demo.config.AdminConfig;
 import com.example.demo.model.Beneficiario;
 import com.example.demo.model.Register;
 import com.example.demo.model.Scadenza;
+import com.example.demo.model.Subscription;
+import com.example.demo.repository.BeneficiariRepository;
+import com.example.demo.repository.ScadenzeRepository;
+import com.example.demo.repository.SubscriptionRepository;
 import com.example.demo.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,10 +21,14 @@ import org.owasp.html.PolicyFactory;
 import org.springframework.web.util.HtmlUtils;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
 public class BeneficiarioController {
+
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
 
     @Autowired
     private CaptchaValidator captchaValidator;
@@ -39,6 +47,12 @@ public class BeneficiarioController {
 
     @Autowired
     private AdminConfig adminConfig;
+    @Autowired
+    private ScadenzaService scadenzaService;
+    @Autowired
+    private BeneficiariRepository beneficiariRepository;
+    @Autowired
+    private ScadenzeRepository scadenzeRepository;
 
 
     // GET /courses -> listing di tutti i corsi con supporto a paginazione, ricerca e ordinamento
@@ -50,6 +64,7 @@ public class BeneficiarioController {
             @RequestParam(defaultValue = "beneficiario") String sortBy, // Campo di ordinamento
             @RequestParam(defaultValue = "asc") String sortDirection,
             @RequestParam(name = "message", required = false) String message,
+            @RequestParam(name = "message1", required = false) String message1,
             Principal principal,
             Model model) {
 
@@ -69,6 +84,7 @@ public class BeneficiarioController {
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("sortDirection", sortDirection);
         model.addAttribute("message", message);
+        model.addAttribute("message1", message1);
 
         return "beneficiari/list";
     }
@@ -255,7 +271,7 @@ public class BeneficiarioController {
 
     // POST /beneficiari/{id}/delete -> cancella un beneficiario
     @PostMapping("/{id}/delete")
-    public String deleteCourse(@PathVariable("id") Integer id,Principal principal,Model model) {
+    public String deleteBeneficiario(@PathVariable("id") Integer id,Principal principal,Model model) {
         Beneficiario beneficiario = beneficiarioService.findById(id);
         String denominazione = beneficiario.getBeneficiario();
         String loggedUsername = principal.getName(); // es: "mario rossi"
@@ -265,6 +281,15 @@ public class BeneficiarioController {
         if (!isOwner) {
             // se non sei il proprietario, redirect o errore
             return "security/access-denied";
+        }
+
+        Beneficiario b = scadenzeRepository.findBeneficiarioById(id);
+        List<Scadenza> scadenze = b.getScadenze();
+        for(Scadenza scadenza : scadenze) {
+            Subscription s = subscriptionRepository.findByScadenza(scadenza);
+            if (s != null) {
+                return "redirect:/beneficiari/list?message1=Il beneficiario che si sta tentando di eliminare contiene una scadenza pagata. Impossibile eliminarlo!";
+            }
         }
         beneficiarioService.deleteById(id);
         return "redirect:/" + id + "/" + denominazione + "/infobeneficiario";
