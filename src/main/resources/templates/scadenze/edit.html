@@ -52,13 +52,23 @@
         <br>
         <div class="form-group">
           <label>Data scadenza</label>
-          <input type="date" name="dataScadenza" th:value="${scadenzaForm.getDataScadenza()}"  class="form-control form-control-lg" required="required"/>
+          <th:block th:if="${scadenzaForm.getStatus().toUpperCase.equals('PAGATO')}">
+              <input type="date" name="dataScadenza" th:value="${scadenzaForm.getDataScadenza()}"  class="form-control form-control-lg" required="required" readonly="readonly" />
+          </th:block>
+          <th:block th:if="${!scadenzaForm.getStatus().toUpperCase.equals('PAGATO')}">
+            <input type="date" name="dataScadenza" th:value="${scadenzaForm.getDataScadenza()}"  class="form-control form-control-lg" required="required" />
+          </th:block>
         </div>
         <br>
         <br>
         <div class="form-group">
           <label>Importo</label>
-          <input  type="number" step="any" id="importo" name="importo"  class="form-control form-control-lg" th:value="${scadenzaForm.getImporto()}" required="required"/>
+          <th:block th:if="${scadenzaForm.getStatus().toUpperCase.equals('PAGATO')}">
+               <input  type="number" step="any" id="importo" name="importo"  class="form-control form-control-lg" th:value="${scadenzaForm.getImporto()}" required="required" readonly="readonly" />
+          </th:block>
+          <th:block th:if="${!scadenzaForm.getStatus().toUpperCase.equals('PAGATO')}">
+            <input  type="number" step="any" id="importo" name="importo"  class="form-control form-control-lg" th:value="${scadenzaForm.getImporto()}" required="required"/>
+          </th:block>
         </div>
       </div>
       <div class="col-md-5">
@@ -82,7 +92,7 @@
           <div class="form-group">
             <label>Data pagamento</label>
             <div class="input-group">
-              <input type="date" id="dataPagamento" name="dataPagamento" th:value="${scadenzaForm.getDataPagamento()}" class="form-control form-control-block"/>
+              <input type="date" id="dataPagamento" name="dataPagamento" th:value="${scadenzaForm.getDataPagamento()}" class="form-control form-control-block" readonly="readonly"/>
             </div>
           </div>
           <br>
